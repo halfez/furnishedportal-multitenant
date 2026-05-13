@@ -9,6 +9,8 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        'fp-primary': '#00798c',
+        'fp-primary-hover': '#148da0',
         'fp-bg': '#f3efec',
         'fp-bg-alt': '#fdf9f6',
         'fp-teal': '#00798c',

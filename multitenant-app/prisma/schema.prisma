@@ -41,6 +41,8 @@ model Landlord {
   primaryColor      String?  @default("#00798c")
   logoUrl           String?
 
+  goLiveAt          DateTime?
+
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
