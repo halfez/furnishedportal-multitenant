@@ -12,14 +12,21 @@
 
 ---
 
-## Current state — 2026-05-09
+## Current state — 2026-05-12
 
 **Landing page + Stripe billing surface: SHIPPED to live.**
-**Tier 1 design package: COMPLETE (proposal form, awaiting review).**
-**Tier 1 implementation: NOT STARTED.**
+**Tier 1 implementation: CODE COMPLETE — awaiting 3 Sean actions to deploy.**
+**Tier 1 acceptance walk: PENDING — blocked on Neon + Vercel provisioning.**
 **Tiers 2–4: NOT STARTED.**
 
-Last commit relevant to Phase 4: `a8fbafb` (furnishedportal-www repo) — pricing cleanup, founding 10-spot, Stripe link swap, logo, chatbot fix.
+Last commit: `25881b2` (branch `phase-1-multitenant-foundation`) — multitenant-app/ scaffold, schema v2, RLS policies, middleware, landlord-context, NextAuth pivot, seed script, 49 files.
+
+**Sean's 3 remaining actions for Tier 1 deploy:**
+1. Create Neon project `furnishedportal-multitenant` → paste DATABASE_URL
+2. Create Vercel project `furnishedportal-multitenant` from branch `phase-1-multitenant-foundation`, root dir `multitenant-app/` → paste all env vars → attach `*.furnishedportal.com`
+3. Generate and paste `FP_ENCRYPTION_KEY`: `openssl rand -base64 32`
+
+Full instructions in `PHASE1_COMPLETION_REPORT.md`.
 
 ---
 
@@ -33,11 +40,11 @@ Last commit relevant to Phase 4: `a8fbafb` (furnishedportal-www repo) — pricin
 | 4 | NextAuth pivot — session carries landlordId, login is subdomain-scoped | ✅ Designed | `phase4-tier1-proposals/NEXTAUTH_PIVOT.md` |
 | 5 | Vercel wildcard `*.furnishedportal.com` | 📝 Documented (Sean to execute) | `phase4-tier1-proposals/VERCEL_SETUP.md` |
 | 6 | Acceptance test plan | ✅ Designed | `phase4-tier1-proposals/ACCEPTANCE_TESTS.md` |
-| 7 | Apply schema migration | ⏳ NOT STARTED | — |
-| 8 | New multi-tenant app directory (sibling of `template/`) | ⏳ NOT STARTED | — |
-| 9 | Component refactor — UI reads landlord from DB instead of CONFIG | ⏳ NOT STARTED | — |
-| 10 | Seed script — create 2 test landlords with isolated sample data | ⏳ NOT STARTED | — |
-| 11 | Tier 1 e2e acceptance walk (the 6 scenarios in ACCEPTANCE_TESTS.md) | ⏳ NOT STARTED | — |
+| 7 | Apply schema migration | ✅ Committed — awaiting Neon project from Sean | `multitenant-app/prisma/schema.prisma` + `rls-policies.sql` |
+| 8 | New multi-tenant app directory (sibling of `template/`) | ✅ Built — `multitenant-app/` | `multitenant-app/` (49 files, commit `25881b2`) |
+| 9 | Component refactor — UI reads landlord from DB instead of CONFIG | ✅ All pages use `withLandlordContext()` | `multitenant-app/app/**` |
+| 10 | Seed script — create 2 test landlords with isolated sample data | ✅ Ready to run after DB provisioned | `multitenant-app/prisma/seed.ts` |
+| 11 | Tier 1 e2e acceptance walk (the 6 scenarios in ACCEPTANCE_TESTS.md) | ⏳ BLOCKED — needs Neon + Vercel (Sean actions) | See `PHASE1_COMPLETION_REPORT.md` |
 
 **Tier 1 done when:** all 6 acceptance scenarios pass against a deployed multi-tenant app on `*.furnishedportal.com`.
 
