@@ -1,0 +1,411 @@
+// FurnishedPortal — Multi-tenant schema v2
+// Applies to NEW Neon project: furnishedportal-multitenant
+// DO NOT apply to the Yellowstone/template database.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =====================================================================
+// MULTI-TENANT CORE
+// =====================================================================
+
+model Landlord {
+  id                String   @id @default(cuid())
+
+  businessName      String
+  brandName         String
+  ownerFirstName    String
+  ownerLastName     String
+  ownerEmail        String   @unique
+  ownerPhone        String?
+
+  subdomain         String   @unique
+  customDomain      String?  @unique
+
+  status            String   @default("pending")  // pending | onboarding | live | paused | canceled
+
+  // BYO Stripe (landlord's own account for collecting tenant rent)
+  // Values are AES-256-GCM encrypted with FP_ENCRYPTION_KEY. Never log.
+  stripeRestrictedKey  String?
+  stripePublishableKey String?
+  stripeWebhookSecret  String?
+  stripeKeysAddedAt    DateTime?
+
+  primaryColor      String?  @default("#00798c")
+  logoUrl           String?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  subscription          Subscription?
+  onboardingResponse    OnboardingResponse?
+  leaseTemplate         LeaseTemplate?
+  users                 User[]
+  properties            Property[]
+  units                 Unit[]
+  houseRules            HouseRule[]
+  amenities             Amenity[]
+  contactSubmissions    ContactSubmission[]
+  bookings              Booking[]
+  faqCategories         FaqCategory[]
+  applications          Application[]
+  tenants               Tenant[]
+  galleryImages         GalleryImage[]
+  payments              Payment[]
+
+  @@index([subdomain])
+  @@index([customDomain])
+  @@index([status])
+}
+
+model Subscription {
+  id                   String   @id @default(cuid())
+  landlordId           String   @unique
+  landlord             Landlord @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+
+  // Platform Stripe (FurnishedPortal's account billing the SaaS subscription)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?  @unique
+
+  status               String   @default("incomplete")  // incomplete | active | past_due | canceled
+  isFoundingCohort     Boolean  @default(false)
+  setupFeePaid         Boolean  @default(false)
+
+  monthlyAmount        Int      // cents (4900 = $49)
+  setupAmount          Int      // cents (49900 = $499)
+
+  trialEndsAt          DateTime?
+  currentPeriodEnd     DateTime?
+  canceledAt           DateTime?
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([status])
+  @@index([stripeSubscriptionId])
+}
+
+model OnboardingResponse {
+  id             String   @id @default(cuid())
+  landlordId     String   @unique
+  landlord       Landlord @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+
+  token          String   @unique
+  tokenExpiresAt DateTime
+
+  page1Data      Json?    // Property Basics
+  page2Data      Json?    // Photos & Media
+  page3Data      Json?    // House Rules & Policies
+  page4Data      Json?    // FAQ & Guest Info
+
+  currentPage    Int      @default(1)
+  completedAt    DateTime?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model User {
+  // Landlord admin user(s). NOT a tenant — tenants are in the Tenant model.
+  id         String   @id @default(cuid())
+  landlordId String
+  landlord   Landlord @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+
+  email      String
+  password   String   // bcrypt hash
+  firstName  String?
+  lastName   String?
+  role       String   @default("admin")  // admin | owner
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([landlordId, email])
+  @@index([landlordId])
+}
+
+model Property {
+  id           String   @id @default(cuid())
+  landlordId   String
+  landlord     Landlord @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+
+  name         String
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  state        String
+  zip          String
+
+  units        Unit[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([landlordId])
+}
+
+model Unit {
+  id          String   @id @default(cuid())
+  landlordId  String
+  landlord    Landlord @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  identifier  String          // "216", "Apt A", etc. — free-form per landlord
+  monthlyRent Float
+  bedrooms    Int?
+  bathrooms   Float?
+  sqft        Int?
+  description String?
+
+  bookings      Booking[]
+  applications  Application[]
+  galleryImages GalleryImage[]
+  payments      Payment[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([landlordId, identifier])
+  @@index([landlordId])
+  @@index([propertyId])
+}
+
+model HouseRule {
+  id         String   @id @default(cuid())
+  landlordId String
+  landlord   Landlord @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+
+  text       String
+  sortOrder  Int      @default(0)
+
+  createdAt  DateTime @default(now())
+
+  @@index([landlordId, sortOrder])
+}
+
+model Amenity {
+  id         String   @id @default(cuid())
+  landlordId String
+  landlord   Landlord @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+
+  text       String
+  icon       String?
+  sortOrder  Int      @default(0)
+
+  createdAt  DateTime @default(now())
+
+  @@index([landlordId, sortOrder])
+}
+
+model LeaseTemplate {
+  id                        String   @id @default(cuid())
+  landlordId                String   @unique
+  landlord                  Landlord @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+
+  jurisdiction              String           // 2-char state: "TX", "CA", "WA", "NY"
+  subJurisdiction           String?          // "SEATTLE", "NYC", "SF" — cities with own rules
+  lateFeeAmount             Float?
+  lateFeeGraceDays          Int      @default(5)
+  petFeeAmount              Float?
+  cleaningFeeAmount         Float?
+  securityDepositMultiplier Float    @default(1.0)
+
+  customClauses             Json?
+  htmlTemplate              String?
+
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+}
+
+// =====================================================================
+// EXISTING MODELS — landlordId added to every one
+// =====================================================================
+
+model ContactSubmission {
+  id         String   @id @default(cuid())
+  landlordId String
+  landlord   Landlord @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+
+  name       String?
+  phone      String?
+  email      String
+  message    String
+  formType   String   @default("contact")
+  status     String   @default("new")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([landlordId, createdAt])
+  @@index([landlordId, status])
+}
+
+model Booking {
+  id         String   @id @default(cuid())
+  landlordId String
+  landlord   Landlord @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+  unitId     String?
+  unit       Unit?    @relation(fields: [unitId], references: [id], onDelete: SetNull)
+
+  startDate  DateTime
+  endDate    DateTime
+  status     String   @default("booked")
+  guestName  String?
+  guestEmail String?
+  guestPhone String?
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([landlordId, startDate, endDate])
+  @@index([landlordId, status])
+  @@index([unitId])
+}
+
+model FaqCategory {
+  id         String    @id @default(cuid())
+  landlordId String
+  landlord   Landlord  @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+
+  title      String
+  icon       String    @default("HelpCircle")
+  sortOrder  Int       @default(0)
+  items      FaqItem[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([landlordId, sortOrder])
+}
+
+model FaqItem {
+  // Inherits landlord scope via FaqCategory cascade
+  id         String      @id @default(cuid())
+  question   String
+  answer     String
+  sortOrder  Int         @default(0)
+  categoryId String
+  category   FaqCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@index([categoryId])
+  @@index([sortOrder])
+}
+
+model Application {
+  id                String   @id @default(cuid())
+  landlordId        String
+  landlord          Landlord @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+  unitId            String?
+  unit              Unit?    @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  tenantId          String
+  tenant            Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  moveInDate        DateTime
+  moveOutDate       DateTime
+  moveInTime        String   @default("12:00 PM")
+  moveOutTime       String   @default("11:59 PM")
+  monthlyRent       Float
+  hasPets           Boolean  @default(false)
+  pets              Json?
+  emergencyName     String?
+  emergencyPhone    String?
+  emergencyRelation String?
+  contactPhone      String?
+  contactEmail      String?
+  status            String   @default("submitted")
+  proratedFirst     Float?
+  proratedLast      Float?
+  totalDueOnMoveIn  Float?
+  contractHtml      String?
+  contractPdf       String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([landlordId, status])
+  @@index([landlordId, tenantId])
+  @@index([unitId])
+}
+
+model Tenant {
+  id               String        @id @default(cuid())
+  landlordId       String
+  landlord         Landlord      @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+
+  firstName        String
+  lastName         String
+  email            String
+  password         String        // bcrypt hash
+  phone            String?
+  leaseStart       DateTime?
+  leaseEnd         DateTime?
+  rent             Float?
+  status           String        @default("active")
+  role             String        @default("tenant")
+  notes            String?
+  stripeCustomerId String?
+
+  applications     Application[]
+  payments         Payment[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@unique([landlordId, email])
+  @@unique([landlordId, stripeCustomerId])
+  @@index([landlordId, status])
+}
+
+model GalleryImage {
+  id               String   @id @default(cuid())
+  landlordId       String
+  landlord         Landlord @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+  unitId           String?
+  unit             Unit?    @relation(fields: [unitId], references: [id], onDelete: SetNull)
+
+  cloudStoragePath String?
+  isPublic         Boolean  @default(true)
+  publicUrl        String?
+  caption          String?
+  sortOrder        Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([landlordId, sortOrder])
+  @@index([unitId])
+}
+
+model Payment {
+  id                   String   @id @default(cuid())
+  landlordId           String
+  landlord             Landlord @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+  unitId               String?
+  unit                 Unit?    @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  tenantId             String
+  tenant               Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  stripeSessionId      String?  @unique
+  stripePaymentIntent  String?
+  stripeSubscriptionId String?
+  type                 String   // "one_time" | "subscription"
+  category             String   // "security_deposit" | "cleaning_fee" | "pet_fee" | "rent" | "first_month"
+  description          String
+  amount               Float    // dollars
+  currency             String   @default("usd")
+  status               String   @default("pending")  // pending | completed | failed | canceled
+  metadata             Json?
+  paidAt               DateTime?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([landlordId, status])
+  @@index([landlordId, tenantId])
+  @@index([landlordId, category])
+  @@index([unitId])
+  @@index([stripeSessionId])
+}
