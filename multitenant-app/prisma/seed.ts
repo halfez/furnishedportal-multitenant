@@ -95,8 +95,10 @@ async function seedLandlord(config: {
   const units = await Promise.all(
     unitData.map((u) =>
       withPlatform((db) =>
-        db.unit.create({
-          data: { landlordId: landlord.id, propertyId: property.id, ...u },
+        db.unit.upsert({
+          where: { landlordId_identifier: { landlordId: landlord.id, identifier: u.identifier } },
+          update: {},
+          create: { landlordId: landlord.id, propertyId: property.id, ...u },
         })
       )
     )
