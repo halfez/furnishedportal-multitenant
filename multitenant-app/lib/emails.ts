@@ -2,7 +2,9 @@
 
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const _key = process.env.RESEND_API_KEY ?? ''
+const EMAIL_TEST_MODE = !_key || _key.startsWith('re_placeholder')
+const resend = EMAIL_TEST_MODE ? null : new Resend(_key)
 
 const FROM = process.env.RESEND_FROM_EMAIL ?? 'noreply@furnishedportal.com'
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furnishedportal.com'
@@ -37,6 +39,10 @@ export async function sendWelcomeEmail({
     </div>
   `)
 
+  if (EMAIL_TEST_MODE || !resend) {
+    console.log('[emails] TEST MODE welcome →', to, '| onboarding URL:', onboardingUrl)
+    return
+  }
   return resend.emails.send({
     from: `FurnishedPortal <${FROM}>`,
     to,
@@ -81,6 +87,10 @@ export async function sendGoLiveEmail({
     </div>
   `)
 
+  if (EMAIL_TEST_MODE || !resend) {
+    console.log('[emails] TEST MODE go-live →', to, '| admin URL:', adminUrl, '| temp pw:', tempPassword)
+    return
+  }
   return resend.emails.send({
     from: `FurnishedPortal <${FROM}>`,
     to,

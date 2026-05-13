@@ -1,17 +1,35 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { resolveLandlord } from '@/lib/landlord-context'
+import { verifyOnboardingToken } from '@/lib/onboarding-token'
 import { redirect } from 'next/navigation'
 import { StripeConnectClient } from './_client'
 
-export default async function StripeConnectPage() {
-  const session = await getServerSession(authOptions)
-  if (!session?.user) redirect('/tenant/login')
-
+export default async function StripeConnectPage({
+  searchParams,
+}: {
+  searchParams: { token?: string }
+}) {
   const landlord = await resolveLandlord()
   if (!landlord) redirect('/tenant/login')
-  if (session.user.landlordId !== landlord.id) redirect('/admin')
-  if (session.user.role !== 'admin' && session.user.role !== 'owner') redirect('/admin')
+
+  const session = await getServerSession(authOptions)
+  let setupToken: string | null = null
+
+  if (!session?.user) {
+    const rawToken = searchParams?.token
+    if (!rawToken) redirect('/tenant/login')
+    try {
+      const { landlordId } = verifyOnboardingToken(rawToken)
+      if (landlordId !== landlord.id) redirect('/tenant/login')
+    } catch {
+      redirect('/tenant/login')
+    }
+    setupToken = rawToken
+  } else {
+    if (session.user.landlordId !== landlord.id) redirect('/admin')
+    if (session.user.role !== 'admin' && session.user.role !== 'owner') redirect('/admin')
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -23,6 +41,7 @@ export default async function StripeConnectPage() {
       </header>
       <main className="max-w-2xl mx-auto px-4 py-8">
         <StripeConnectClient
+          setupToken={setupToken}
           alreadyConnected={!!landlord.stripeRestrictedKey}
           connectedAt={landlord.stripeKeysAddedAt?.toISOString() ?? null}
           maskedPublishableKey={

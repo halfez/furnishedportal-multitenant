@@ -8,22 +8,49 @@ import { withLandlordContext, resolveLandlord } from '@/lib/landlord-context'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { sendGoLiveEmail } from '@/lib/emails'
+import { resolveSetupToken, OnboardingTokenError } from '@/lib/onboarding-token'
+import { z } from 'zod'
+import type { Landlord } from '@prisma/client'
 
 function generateTempPassword(): string {
   return randomBytes(6).toString('hex') // 12-char hex — readable, not guessable
 }
 
-export async function POST(request: NextRequest) {
-  // Auth: admin for this subdomain.
-  const landlord = await resolveLandlord()
-  if (!landlord) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+const Body = z.object({ token: z.string().optional() }).passthrough()
 
-  const session = await getServerSession(authOptions)
-  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  if (session.user.landlordId !== landlord.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  if (session.user.role !== 'admin' && session.user.role !== 'owner') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+export async function POST(request: NextRequest) {
+  let body: z.infer<typeof Body> = {}
+  try {
+    body = Body.parse(await request.json())
+  } catch {
+    body = {}
   }
+
+  // Auth: session OR valid onboarding token (for initial setup before admin account exists).
+  let landlord: Landlord | null = null
+  const session = await getServerSession(authOptions)
+
+  if (!session?.user) {
+    if (!body.token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    try {
+      const { payload } = await resolveSetupToken(body.token)
+      landlord = await prisma.landlord.findUnique({ where: { id: payload.landlordId } })
+    } catch (e) {
+      if (e instanceof OnboardingTokenError) {
+        return NextResponse.json({ error: e.message }, { status: 401 })
+      }
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+  } else {
+    landlord = await resolveLandlord()
+    if (!landlord) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    if (session.user.landlordId !== landlord.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (session.user.role !== 'admin' && session.user.role !== 'owner') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+  }
+
+  if (!landlord) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   // Idempotent: already live.
   if (landlord.status === 'live') {
@@ -52,18 +79,19 @@ export async function POST(request: NextRequest) {
   const tempPassword = generateTempPassword()
   const hashedPassword = await bcrypt.hash(tempPassword, 12)
 
-  await withLandlordContext(landlord.id, async (db) => {
+  const _landlord = landlord
+  await withLandlordContext(_landlord.id, async (db) => {
     const existing = await db.user.findFirst({
-      where: { email: landlord.ownerEmail },
+      where: { email: _landlord.ownerEmail },
     })
     if (!existing) {
       await db.user.create({
         data: {
-          landlordId: landlord.id,
-          email: landlord.ownerEmail,
+          landlordId: _landlord.id,
+          email: _landlord.ownerEmail,
           password: hashedPassword,
-          firstName: landlord.ownerFirstName,
-          lastName: landlord.ownerLastName,
+          firstName: _landlord.ownerFirstName,
+          lastName: _landlord.ownerLastName,
           role: 'owner',
         },
       })

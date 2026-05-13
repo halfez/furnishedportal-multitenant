@@ -48,6 +48,27 @@ export async function resolveOnboardingToken(
   return { payload, record }
 }
 
+// Like resolveOnboardingToken but allows already-completed tokens.
+// Used for stripe-connect and go-live steps (which come AFTER questionnaire submit).
+export async function resolveSetupToken(
+  rawToken: string,
+): Promise<{ payload: OnboardingTokenPayload; record: OnboardingResponse }> {
+  let payload: OnboardingTokenPayload
+  try {
+    payload = verifyOnboardingToken(rawToken)
+  } catch {
+    throw new OnboardingTokenError('invalid_or_expired')
+  }
+
+  const record = await prisma.onboardingResponse.findUnique({
+    where: { landlordId: payload.landlordId },
+  })
+
+  if (!record) throw new OnboardingTokenError('not_found')
+
+  return { payload, record }
+}
+
 export type OnboardingTokenErrorCode =
   | 'invalid_or_expired'
   | 'not_found'

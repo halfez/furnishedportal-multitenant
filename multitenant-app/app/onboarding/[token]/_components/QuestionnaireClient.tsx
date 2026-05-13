@@ -191,7 +191,7 @@ export function QuestionnaireClient({ token, initialPage, initialData, landlord 
             tenant payments, then go live.
           </p>
           <a
-            href={`https://${p4.getValues('subdomain')}.furnishedportal.com/admin/stripe-connect`}
+            href={`https://${p4.getValues('subdomain')}.furnishedportal.com/admin/stripe-connect?token=${token}`}
             className="inline-block bg-fp-primary text-white px-6 py-3 rounded-lg font-semibold"
           >
             Connect Stripe →

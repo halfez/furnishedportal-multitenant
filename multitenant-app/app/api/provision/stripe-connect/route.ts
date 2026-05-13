@@ -5,32 +5,51 @@ import Stripe from 'stripe'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { resolveLandlord, withLandlordContext } from '@/lib/landlord-context'
+import { prisma } from '@/lib/prisma'
 import { encrypt } from '@/lib/encryption'
+import { resolveSetupToken, OnboardingTokenError } from '@/lib/onboarding-token'
 import { z } from 'zod'
+import type { Landlord } from '@prisma/client'
 
 const Body = z.object({
   restrictedKey: z.string().min(1),
   publishableKey: z.string().min(1),
+  token: z.string().optional(),
 })
 
 export async function POST(request: NextRequest) {
-  // Auth: must be admin for this subdomain's landlord.
-  const landlord = await resolveLandlord()
-  if (!landlord) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-
-  const session = await getServerSession(authOptions)
-  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  if (session.user.landlordId !== landlord.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  if (session.user.role !== 'admin' && session.user.role !== 'owner') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
   let body: z.infer<typeof Body>
   try {
     body = Body.parse(await request.json())
   } catch {
     return NextResponse.json({ error: 'restrictedKey and publishableKey are required' }, { status: 400 })
   }
+
+  // Auth: session OR valid onboarding token (for initial setup before admin account exists).
+  let landlord: Landlord | null = null
+  const session = await getServerSession(authOptions)
+
+  if (!session?.user) {
+    if (!body.token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    try {
+      const { payload } = await resolveSetupToken(body.token)
+      landlord = await prisma.landlord.findUnique({ where: { id: payload.landlordId } })
+    } catch (e) {
+      if (e instanceof OnboardingTokenError) {
+        return NextResponse.json({ error: e.message }, { status: 401 })
+      }
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+  } else {
+    landlord = await resolveLandlord()
+    if (!landlord) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    if (session.user.landlordId !== landlord.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (session.user.role !== 'admin' && session.user.role !== 'owner') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+  }
+
+  if (!landlord) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   // Validate the restricted key against Stripe.
   try {
@@ -51,7 +70,7 @@ export async function POST(request: NextRequest) {
 
   await withLandlordContext(landlord.id, async (db) => {
     await db.landlord.update({
-      where: { id: landlord.id },
+      where: { id: landlord!.id },
       data: {
         stripeRestrictedKey: encryptedKey,
         stripePublishableKey: body.publishableKey,

@@ -3,12 +3,13 @@
 import { useState } from 'react'
 
 interface Props {
+  setupToken: string | null
   alreadyConnected: boolean
   connectedAt: string | null
   maskedPublishableKey: string | null
 }
 
-export function StripeConnectClient({ alreadyConnected, connectedAt, maskedPublishableKey }: Props) {
+export function StripeConnectClient({ setupToken, alreadyConnected, connectedAt, maskedPublishableKey }: Props) {
   const [restrictedKey, setRestrictedKey] = useState('')
   const [publishableKey, setPublishableKey] = useState('')
   const [saving, setSaving] = useState(false)
@@ -29,7 +30,11 @@ export function StripeConnectClient({ alreadyConnected, connectedAt, maskedPubli
       const res = await fetch('/api/provision/stripe-connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ restrictedKey: restrictedKey.trim(), publishableKey: publishableKey.trim() }),
+        body: JSON.stringify({
+          restrictedKey: restrictedKey.trim(),
+          publishableKey: publishableKey.trim(),
+          ...(setupToken ? { token: setupToken } : {}),
+        }),
       })
       if (!res.ok) {
         const body = await res.json()
@@ -79,7 +84,7 @@ export function StripeConnectClient({ alreadyConnected, connectedAt, maskedPubli
           />
         </div>
 
-        <GoLiveSection />
+        <GoLiveSection setupToken={setupToken} />
       </div>
     )
   }
@@ -172,7 +177,7 @@ function KeyForm({
   )
 }
 
-function GoLiveSection() {
+function GoLiveSection({ setupToken }: { setupToken: string | null }) {
   const [going, setGoing] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   const [live, setLive] = useState(false)
@@ -181,7 +186,11 @@ function GoLiveSection() {
     setGoing(true)
     setErr(null)
     try {
-      const res = await fetch('/api/provision/go-live', { method: 'POST' })
+      const res = await fetch('/api/provision/go-live', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(setupToken ? { token: setupToken } : {}),
+      })
       if (!res.ok) {
         const body = await res.json()
         throw new Error(body.error ?? 'Failed')

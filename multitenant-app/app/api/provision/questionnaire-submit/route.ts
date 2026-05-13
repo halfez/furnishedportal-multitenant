@@ -51,9 +51,9 @@ const Page3 = z.object({
 
 const Page4 = z.object({
   primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
-  contactEmail: z.string().email().optional(),
+  contactEmail: z.string().email().optional().or(z.literal('')),
   subdomain: z.string().min(1),
-  logoUrl: z.string().url().optional(),
+  logoUrl: z.string().url().optional().or(z.literal('')),
 })
 
 const SubmitBody = z.object({
