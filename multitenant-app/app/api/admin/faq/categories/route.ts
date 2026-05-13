@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
     const agg = await db.faqCategory.aggregate({ _max: { sortOrder: true } })
     return db.faqCategory.create({
       data: {
+        landlordId: ctx.landlord.id,
         title: body.title,
         icon: body.icon ?? 'HelpCircle',
         sortOrder: (agg._max.sortOrder ?? -1) + 1,

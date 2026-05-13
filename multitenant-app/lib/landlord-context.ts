@@ -126,13 +126,16 @@ export function scopedPrismaFor(landlordId: string) {
           return query(args)
         },
         async create({ model, args, query }) {
-          if (isScopedModel(model)) args.data = { ...args.data, landlordId }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          if (isScopedModel(model)) (args as any).data = { ...(args as any).data, landlordId }
           return query(args)
         },
         async createMany({ model, args, query }) {
           if (isScopedModel(model)) {
-            const rows = Array.isArray(args.data) ? args.data : [args.data]
-            args.data = rows.map((r) => ({ ...r, landlordId }))
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const a = args as any
+            const rows = Array.isArray(a.data) ? a.data : [a.data]
+            a.data = rows.map((r: Record<string, unknown>) => ({ ...r, landlordId }))
           }
           return query(args)
         },

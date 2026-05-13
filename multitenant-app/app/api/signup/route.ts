@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
     const tenant = await withLandlordContext(landlord.id, (db) =>
       db.tenant.create({
         data: {
+          landlordId: landlord.id,
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           email: email.toLowerCase().trim(),

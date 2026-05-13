@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
     const agg = await db.galleryImage.aggregate({ _max: { sortOrder: true } })
     return db.galleryImage.create({
       data: {
+        landlordId: ctx.landlord.id,
         cloudStoragePath: key,
         publicUrl,
         isPublic: true,

@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
 
   const submission = await withLandlordContext(landlord.id, (db) =>
     db.contactSubmission.create({
-      data: { name, phone, email, message, formType: formType ?? 'contact' },
+      data: { landlordId: landlord.id, name, phone, email, message, formType: formType ?? 'contact' },
     })
   )
 

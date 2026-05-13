@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
 
     return db.application.create({
       data: {
+        landlordId: landlord.id,
         tenantId: session.user.id,
         unitId: unitId ?? null,
         moveInDate: new Date(moveInDate),
