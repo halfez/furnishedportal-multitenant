@@ -37,7 +37,7 @@ ALTER TABLE "Subscription" FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS landlord_isolation ON "Subscription";
 CREATE POLICY landlord_isolation ON "Subscription"
   USING (
-    landlord_id = current_setting('app.landlord_id', true)::text
+    "landlordId" = current_setting('app.landlord_id', true)::text
     OR current_setting('app.landlord_id', true) = 'PLATFORM'
   );
 
@@ -47,7 +47,7 @@ ALTER TABLE "OnboardingResponse" FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS landlord_isolation ON "OnboardingResponse";
 CREATE POLICY landlord_isolation ON "OnboardingResponse"
   USING (
-    landlord_id = current_setting('app.landlord_id', true)::text
+    "landlordId" = current_setting('app.landlord_id', true)::text
     OR current_setting('app.landlord_id', true) = 'PLATFORM'
   );
 
@@ -57,7 +57,7 @@ ALTER TABLE "User" FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS landlord_isolation ON "User";
 CREATE POLICY landlord_isolation ON "User"
   USING (
-    landlord_id = current_setting('app.landlord_id', true)::text
+    "landlordId" = current_setting('app.landlord_id', true)::text
     OR current_setting('app.landlord_id', true) = 'PLATFORM'
   );
 
@@ -67,7 +67,7 @@ ALTER TABLE "Property" FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS landlord_isolation ON "Property";
 CREATE POLICY landlord_isolation ON "Property"
   USING (
-    landlord_id = current_setting('app.landlord_id', true)::text
+    "landlordId" = current_setting('app.landlord_id', true)::text
     OR current_setting('app.landlord_id', true) = 'PLATFORM'
   );
 
@@ -77,7 +77,7 @@ ALTER TABLE "Unit" FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS landlord_isolation ON "Unit";
 CREATE POLICY landlord_isolation ON "Unit"
   USING (
-    landlord_id = current_setting('app.landlord_id', true)::text
+    "landlordId" = current_setting('app.landlord_id', true)::text
     OR current_setting('app.landlord_id', true) = 'PLATFORM'
   );
 
@@ -87,7 +87,7 @@ ALTER TABLE "HouseRule" FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS landlord_isolation ON "HouseRule";
 CREATE POLICY landlord_isolation ON "HouseRule"
   USING (
-    landlord_id = current_setting('app.landlord_id', true)::text
+    "landlordId" = current_setting('app.landlord_id', true)::text
     OR current_setting('app.landlord_id', true) = 'PLATFORM'
   );
 
@@ -97,7 +97,7 @@ ALTER TABLE "Amenity" FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS landlord_isolation ON "Amenity";
 CREATE POLICY landlord_isolation ON "Amenity"
   USING (
-    landlord_id = current_setting('app.landlord_id', true)::text
+    "landlordId" = current_setting('app.landlord_id', true)::text
     OR current_setting('app.landlord_id', true) = 'PLATFORM'
   );
 
@@ -107,7 +107,7 @@ ALTER TABLE "LeaseTemplate" FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS landlord_isolation ON "LeaseTemplate";
 CREATE POLICY landlord_isolation ON "LeaseTemplate"
   USING (
-    landlord_id = current_setting('app.landlord_id', true)::text
+    "landlordId" = current_setting('app.landlord_id', true)::text
     OR current_setting('app.landlord_id', true) = 'PLATFORM'
   );
 
@@ -117,7 +117,7 @@ ALTER TABLE "ContactSubmission" FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS landlord_isolation ON "ContactSubmission";
 CREATE POLICY landlord_isolation ON "ContactSubmission"
   USING (
-    landlord_id = current_setting('app.landlord_id', true)::text
+    "landlordId" = current_setting('app.landlord_id', true)::text
     OR current_setting('app.landlord_id', true) = 'PLATFORM'
   );
 
@@ -127,7 +127,7 @@ ALTER TABLE "Booking" FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS landlord_isolation ON "Booking";
 CREATE POLICY landlord_isolation ON "Booking"
   USING (
-    landlord_id = current_setting('app.landlord_id', true)::text
+    "landlordId" = current_setting('app.landlord_id', true)::text
     OR current_setting('app.landlord_id', true) = 'PLATFORM'
   );
 
@@ -137,7 +137,7 @@ ALTER TABLE "FaqCategory" FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS landlord_isolation ON "FaqCategory";
 CREATE POLICY landlord_isolation ON "FaqCategory"
   USING (
-    landlord_id = current_setting('app.landlord_id', true)::text
+    "landlordId" = current_setting('app.landlord_id', true)::text
     OR current_setting('app.landlord_id', true) = 'PLATFORM'
   );
 
@@ -147,7 +147,7 @@ ALTER TABLE "Application" FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS landlord_isolation ON "Application";
 CREATE POLICY landlord_isolation ON "Application"
   USING (
-    landlord_id = current_setting('app.landlord_id', true)::text
+    "landlordId" = current_setting('app.landlord_id', true)::text
     OR current_setting('app.landlord_id', true) = 'PLATFORM'
   );
 
@@ -157,7 +157,7 @@ ALTER TABLE "Tenant" FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS landlord_isolation ON "Tenant";
 CREATE POLICY landlord_isolation ON "Tenant"
   USING (
-    landlord_id = current_setting('app.landlord_id', true)::text
+    "landlordId" = current_setting('app.landlord_id', true)::text
     OR current_setting('app.landlord_id', true) = 'PLATFORM'
   );
 
@@ -167,7 +167,7 @@ ALTER TABLE "GalleryImage" FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS landlord_isolation ON "GalleryImage";
 CREATE POLICY landlord_isolation ON "GalleryImage"
   USING (
-    landlord_id = current_setting('app.landlord_id', true)::text
+    "landlordId" = current_setting('app.landlord_id', true)::text
     OR current_setting('app.landlord_id', true) = 'PLATFORM'
   );
 
@@ -177,7 +177,7 @@ ALTER TABLE "Payment" FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS landlord_isolation ON "Payment";
 CREATE POLICY landlord_isolation ON "Payment"
   USING (
-    landlord_id = current_setting('app.landlord_id', true)::text
+    "landlordId" = current_setting('app.landlord_id', true)::text
     OR current_setting('app.landlord_id', true) = 'PLATFORM'
   );
 

@@ -15,8 +15,8 @@ build/
 .env.test.local
 .env.production.local
 
-# Prisma
-prisma/migrations/
+# Prisma — migrations are committed to track schema history
+# prisma/migrations/  ← intentionally NOT ignored
 
 # Misc
 .DS_Store
