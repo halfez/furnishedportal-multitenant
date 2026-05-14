@@ -1,4 +1,4 @@
-// TODO: review copy — placeholder text used; replace with final brand voice before launch.
+// Last reviewed: 2026-05-14
 
 import { Resend } from 'resend'
 
@@ -29,10 +29,10 @@ export async function sendWelcomeEmail({
     <div class="header"><h1>Welcome to FurnishedPortal</h1></div>
     <div class="body">
       <p>Hi ${firstName},</p>
-      <p>Your payment was received — thank you! Your subdomain <strong>${subdomain}.furnishedportal.com</strong> is reserved and waiting for you.</p>
-      <p>Click below to complete the 10-minute setup questionnaire. We'll ask about your property, units, house rules, and branding — then your site goes live.</p>
-      <a class="cta" href="${onboardingUrl}">Complete Your Setup</a>
-      <p>This link expires in ${expiryDays} days. If you need a new link, reply to this email.</p>
+      <p>Welcome to FurnishedPortal — you're in. Your subdomain <strong>${subdomain}.furnishedportal.com</strong> is reserved and ready to go live.</p>
+      <p>Complete the 10-minute setup below. We'll ask about your property, units, house rules, and branding. Once you're done, your site goes live instantly — no waiting, no back-and-forth.</p>
+      <a class="cta" href="${onboardingUrl}">Set Up Your Site</a>
+      <p style="font-size:13px;color:#6b7280;">This link expires in ${expiryDays} days. If you need a new one, just reply to this email.</p>
     </div>
     <div class="footer">
       <p>FurnishedPortal &mdash; Furnished Midterm Rentals<br>Questions? Reply to this email or visit <a href="${BASE_URL}">${BASE_URL}</a></p>
@@ -68,18 +68,17 @@ export async function sendGoLiveEmail({
     <div class="header"><h1>Your site is live!</h1></div>
     <div class="body">
       <p>Hi ${firstName},</p>
-      <p>Your FurnishedPortal site is now live at <a href="https://${subdomain}.furnishedportal.com">${subdomain}.furnishedportal.com</a>.</p>
-      <p>Log in to your admin dashboard to manage applications, update photos, and edit your FAQs:</p>
-      <a class="cta" href="${adminUrl}">Open Admin Dashboard</a>
-      <p><strong>Your login details:</strong><br>
+      <p>Your site is live at <a href="https://${subdomain}.furnishedportal.com" style="color:#00798c;">${subdomain}.furnishedportal.com</a>. Start sharing it — prospective tenants can apply right now.</p>
+      <a class="cta" href="${adminUrl}">Go to Admin Dashboard</a>
+      <p><strong>Your login:</strong><br>
       Email: ${to}<br>
-      Temporary password: <code>${tempPassword}</code></p>
-      <p>Change your password after your first login.</p>
-      <p><strong>Next steps:</strong></p>
+      Temporary password: <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;">${tempPassword}</code></p>
+      <p style="font-size:13px;color:#6b7280;">Change your password on first login.</p>
+      <p><strong>Three quick wins to do first:</strong></p>
       <ol>
-        <li>Share your link with prospective tenants</li>
-        <li>Upload photos to your gallery</li>
-        <li>Review any incoming applications in the admin panel</li>
+        <li>Upload a few photos in the Gallery</li>
+        <li>Share your link on social media or send it to leads</li>
+        <li>Check Applications as they come in</li>
       </ol>
     </div>
     <div class="footer">

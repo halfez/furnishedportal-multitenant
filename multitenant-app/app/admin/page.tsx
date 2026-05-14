@@ -63,19 +63,29 @@ export default async function AdminPage() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          <Link
-            href="/admin/faq"
-            className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
-          >
+          <Link href="/admin/faq" className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
             <h2 className="font-semibold text-fp-text mb-1">FAQ Editor</h2>
             <p className="text-sm text-fp-text-light">Manage frequently asked questions.</p>
           </Link>
-          <Link
-            href="/admin/applications"
-            className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
-          >
+          <Link href="/admin/applications" className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
             <h2 className="font-semibold text-fp-text mb-1">Applications</h2>
             <p className="text-sm text-fp-text-light">Review tenant applications.</p>
+          </Link>
+          <Link href="/admin/gallery" className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+            <h2 className="font-semibold text-fp-text mb-1">Gallery</h2>
+            <p className="text-sm text-fp-text-light">Upload and manage property photos.</p>
+          </Link>
+          <Link href="/admin/profile" className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+            <h2 className="font-semibold text-fp-text mb-1">Profile</h2>
+            <p className="text-sm text-fp-text-light">Brand name, colors, logo, contact email.</p>
+          </Link>
+          <Link href="/admin/lease" className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+            <h2 className="font-semibold text-fp-text mb-1">Lease Template</h2>
+            <p className="text-sm text-fp-text-light">Edit fee defaults and custom clauses.</p>
+          </Link>
+          <Link href="/admin/settings" className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+            <h2 className="font-semibold text-fp-text mb-1">Settings</h2>
+            <p className="text-sm text-fp-text-light">Rename your subdomain.</p>
           </Link>
         </div>
       </main>

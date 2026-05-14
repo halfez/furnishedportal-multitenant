@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { resolveLandlord, withLandlordContext } from '@/lib/landlord-context'
-import { uploadToS3, s3KeyForLandlord } from '@/lib/s3'
+import { uploadToBlob, galleryBlobPath } from '@/lib/blob'
 
 async function requireAdmin() {
   const landlord = await resolveLandlord()
@@ -38,15 +38,15 @@ export async function POST(request: NextRequest) {
   if (!file) return NextResponse.json({ error: 'file required' }, { status: 400 })
 
   const buffer = Buffer.from(await file.arrayBuffer())
-  const key = s3KeyForLandlord(ctx.landlord.id, `${Date.now()}-${file.name}`)
-  const publicUrl = await uploadToS3(key, buffer, file.type)
+  const blobPath = galleryBlobPath(ctx.landlord.id, file.name)
+  const { url: publicUrl, pathname } = await uploadToBlob(blobPath, buffer, file.type)
 
   const image = await withLandlordContext(ctx.landlord.id, async (db) => {
     const agg = await db.galleryImage.aggregate({ _max: { sortOrder: true } })
     return db.galleryImage.create({
       data: {
         landlordId: ctx.landlord.id,
-        cloudStoragePath: key,
+        cloudStoragePath: pathname,
         publicUrl,
         isPublic: true,
         caption: caption ?? null,

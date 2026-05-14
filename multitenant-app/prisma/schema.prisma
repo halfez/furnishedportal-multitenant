@@ -40,6 +40,10 @@ model Landlord {
 
   primaryColor      String?  @default("#00798c")
   logoUrl           String?
+  contactEmail      String?
+
+  previousSubdomain  String?
+  subdomainChangedAt DateTime?
 
   goLiveAt          DateTime?
 

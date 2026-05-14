@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { resolveLandlord, withLandlordContext } from '@/lib/landlord-context'
-import { deleteFromS3 } from '@/lib/s3'
+import { deleteFromBlob } from '@/lib/blob'
 
 async function requireAdmin() {
   const landlord = await resolveLandlord()
@@ -45,8 +45,8 @@ export async function DELETE(
   )
   if (!image) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  if (image.cloudStoragePath) {
-    await deleteFromS3(image.cloudStoragePath).catch(() => null)
+  if (image.publicUrl) {
+    await deleteFromBlob(image.publicUrl).catch(() => null)
   }
 
   await withLandlordContext(ctx.landlord.id, (db) =>

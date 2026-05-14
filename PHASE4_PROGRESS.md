@@ -12,21 +12,25 @@
 
 ---
 
-## Current state — 2026-05-13
+## Current state — 2026-05-14
 
 **Landing page + Stripe billing surface: SHIPPED to live.**
 **Tier 1 (Phase 1): COMPLETE ✅ — all acceptance tests A–D passed.**
 **Wildcard SSL (`*.furnishedportal.com`): LIVE — cert issued, edge serving.**
 **Nameservers transferred to Vercel DNS (`ns1/ns2.vercel-dns.com`) 2026-05-13.**
 **Tier 2 (Phase 2): COMPLETE ✅ — acceptance tests a–h passed (g deferred to Phase 3).**
+**Phase 2 PRODUCTION DEPLOYED ✅ — `furnishedportal-multitenant.vercel.app` serving live as of 2026-05-14.**
 **Tiers 3–4: NOT STARTED.**
 
-Phase 2 branch: `phase-2-provisioning-api`.
-Acceptance test run 2026-05-13: charlie + delta provisioned end-to-end locally. Both subdomains live on production.
-Production actions still needed before first real customer:
-1. Register Stripe webhook → `https://furnishedportal-multitenant.vercel.app/api/provision/from-stripe` (event: `checkout.session.completed`) → paste signing secret as `STRIPE_FP_WEBHOOK_SECRET` in Vercel
-2. Confirm `RESEND_API_KEY` is set in Vercel env vars (emails log in test mode; must be real key for live customers)
-3. Review email copy in `lib/emails.ts` (both templates are placeholder text)
+Phase 2 merged into production branch `phase-1-multitenant-foundation` via fast-forward 2026-05-14.
+Build fix applied: `prisma generate &&` prepended to build script in `package.json` (commit `570b5b0`) — prevents stale Prisma client in Vercel's cached `node_modules`.
+
+Pre-live checklist status (first real customer):
+1. ✅ Stripe webhook registered → `STRIPE_FP_WEBHOOK_SECRET` set in Vercel (Sean confirmed 2026-05-14)
+2. ✅ `RESEND_API_KEY` set in Vercel env vars (Sean confirmed 2026-05-14)
+3. ⚠️ **Resend sender domain** — `noreply@furnishedportal.com` (the default `FROM`) must be a verified sending domain in Resend dashboard, OR set `RESEND_FROM_EMAIL` in Vercel to a domain that IS verified. Emails will bounce/fail silently without this.
+4. ✅ `whsec_placeholder` test bypass auto-disabled — resolved when real secret was set.
+5. (Optional) Email copy review — `lib/emails.ts` TODO flag at top; body text is real/usable, not Lorem ipsum. Replace before launch if brand voice polish is wanted.
 
 Full sign-off in `PHASE2_COMPLETION_REPORT.md`.
 
