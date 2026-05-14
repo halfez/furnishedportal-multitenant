@@ -20,7 +20,8 @@
 **Nameservers transferred to Vercel DNS (`ns1/ns2.vercel-dns.com`) 2026-05-13.**
 **Tier 2 (Phase 2): COMPLETE ✅ — acceptance tests a–h passed (g deferred to Phase 3).**
 **Phase 2 PRODUCTION DEPLOYED ✅ — `furnishedportal-multitenant.vercel.app` serving live as of 2026-05-14.**
-**Tiers 3–4: NOT STARTED.**
+**Tier 3 (Phase 3): COMPLETE ✅ — admin gallery, profile, lease template, settings + Vercel Blob. Deployed 2026-05-14. Commit `139aaf3`.**
+**Tier 4: NOT STARTED — deferred until 5+ paying customers.**
 
 Phase 2 merged into production branch `phase-1-multitenant-foundation` via fast-forward 2026-05-14.
 Build fix applied: `prisma generate &&` prepended to build script in `package.json` (commit `570b5b0`) — prevents stale Prisma client in Vercel's cached `node_modules`.
