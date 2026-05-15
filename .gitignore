@@ -7,3 +7,7 @@ node_modules/
 
 # Dev server log
 multitenant-app/dev-server.log
+
+# Archived reference code — kept on disk, not tracked in git
+# (template-path-b was a submodule; easier to gitignore the whole folder)
+_archive/
