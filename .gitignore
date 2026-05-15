@@ -1,0 +1,9 @@
+# Safety net — nested .gitignore files cover most cases, but this ensures
+# node_modules are never accidentally committed from any subfolder.
+node_modules/
+
+# Research / bulk export files — not source code
+*.zip
+
+# Dev server log
+multitenant-app/dev-server.log
