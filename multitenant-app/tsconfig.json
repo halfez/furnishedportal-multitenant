@@ -18,6 +18,13 @@
       "@/*": ["./*"]
     }
   },
+  "ts-node": {
+    "transpileOnly": true,
+    "compilerOptions": {
+      "module": "CommonJS",
+      "moduleResolution": "node"
+    }
+  },
   "include": [
     "next-env.d.ts",
     "**/*.ts",

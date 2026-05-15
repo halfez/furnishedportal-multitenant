@@ -71,6 +71,10 @@ export default async function AdminPage() {
             <h2 className="font-semibold text-fp-text mb-1">Applications</h2>
             <p className="text-sm text-fp-text-light">Review tenant applications.</p>
           </Link>
+          <Link href="/admin/payments" className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+            <h2 className="font-semibold text-fp-text mb-1">Payments</h2>
+            <p className="text-sm text-fp-text-light">View payment history and issue refunds.</p>
+          </Link>
           <Link href="/admin/gallery" className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
             <h2 className="font-semibold text-fp-text mb-1">Gallery</h2>
             <p className="text-sm text-fp-text-light">Upload and manage property photos.</p>

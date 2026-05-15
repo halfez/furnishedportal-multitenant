@@ -174,7 +174,6 @@ model Unit {
   bookings      Booking[]
   applications  Application[]
   galleryImages GalleryImage[]
-  payments      Payment[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -332,6 +331,7 @@ model Application {
   totalDueOnMoveIn  Float?
   contractHtml      String?
   contractPdf       String?
+  payments          Payment[]
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -387,32 +387,52 @@ model GalleryImage {
   @@index([unitId])
 }
 
-model Payment {
-  id                   String   @id @default(cuid())
-  landlordId           String
-  landlord             Landlord @relation(fields: [landlordId], references: [id], onDelete: Cascade)
-  unitId               String?
-  unit                 Unit?    @relation(fields: [unitId], references: [id], onDelete: SetNull)
-  tenantId             String
-  tenant               Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+enum PaymentType {
+  RENT
+  DEPOSIT
+  FEE
+}
 
-  stripeSessionId      String?  @unique
-  stripePaymentIntent  String?
-  stripeSubscriptionId String?
-  type                 String   // "one_time" | "subscription"
-  category             String   // "security_deposit" | "cleaning_fee" | "pet_fee" | "rent" | "first_month"
-  description          String
-  amount               Float    // dollars
-  currency             String   @default("usd")
-  status               String   @default("pending")  // pending | completed | failed | canceled
-  metadata             Json?
-  paidAt               DateTime?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model Payment {
+  id                    String        @id @default(cuid())
+  landlordId            String
+  landlord              Landlord      @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+
+  // tenantId is nullable — anonymous / one-off payments are allowed before a Tenant record exists
+  tenantId              String?
+  tenant                Tenant?       @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+
+  // applicationId links to the originating lease application (optional)
+  applicationId         String?
+  application           Application?  @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+
+  // leaseId reserved for future Lease model — stored as plain string until that model exists
+  leaseId               String?
+
+  type                  PaymentType
+  status                PaymentStatus @default(PENDING)
+  amount                Int           // cents (e.g. 150000 = $1,500.00)
+  currency              String        @default("usd")
+  description           String?
+
+  stripeSessionId       String?       @unique
+  stripePaymentIntentId String?
+
+  paidAt                DateTime?
+  refundedAt            DateTime?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
 
   @@index([landlordId, status])
   @@index([landlordId, tenantId])
-  @@index([landlordId, category])
-  @@index([unitId])
+  @@index([landlordId, type])
+  @@index([applicationId])
   @@index([stripeSessionId])
 }

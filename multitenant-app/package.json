@@ -12,7 +12,8 @@
     "db:push": "prisma db push",
     "db:seed": "ts-node --project tsconfig.json -e \"require('ts-node/register'); require('./prisma/seed.ts')\"",
     "db:studio": "prisma studio",
-    "db:rls": "psql $DATABASE_URL -f prisma/rls-policies.sql"
+    "db:rls": "psql $DATABASE_URL -f prisma/rls-policies.sql",
+    "smoke:stripe-tenant": "node --env-file=.env -r ts-node/register/transpile-only scripts/smoke-test-stripe-tenant.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.0.0",

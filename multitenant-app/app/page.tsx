@@ -51,6 +51,7 @@ export default async function HomePage() {
           <div className="flex gap-6 text-sm font-medium text-fp-text">
             <Link href="/gallery" className="hover:text-fp-teal transition-colors">Gallery</Link>
             <Link href="/faq" className="hover:text-fp-teal transition-colors">FAQ</Link>
+            <Link href="/pay" className="hover:text-fp-teal transition-colors">Pay rent</Link>
             <Link href="/tenant/login" className="hover:text-fp-teal transition-colors">Tenant Login</Link>
           </div>
         </div>
