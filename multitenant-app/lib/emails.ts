@@ -7,7 +7,9 @@ const EMAIL_TEST_MODE = !_key || _key.startsWith('re_placeholder')
 const resend = EMAIL_TEST_MODE ? null : new Resend(_key)
 
 const FROM = process.env.RESEND_FROM_EMAIL ?? 'noreply@furnishedportal.com'
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furnishedportal.com'
+const _appUrl = process.env.NEXT_PUBLIC_APP_URL
+if (!_appUrl) throw new Error('NEXT_PUBLIC_APP_URL is not set — cannot build email links')
+const BASE_URL = _appUrl
 
 function base(body: string): string {
   return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;margin:0;padding:0}.wrap{max-width:600px;margin:40px auto;background:#fff;border-radius:8px;overflow:hidden}.header{background:#00798c;padding:28px 32px}.header h1{color:#fff;margin:0;font-size:22px;font-weight:600}.body{padding:32px}.body p{color:#374151;line-height:1.7;margin:0 0 16px}.cta{display:inline-block;background:#00798c;color:#fff;text-decoration:none;padding:14px 28px;border-radius:6px;font-weight:600;font-size:15px;margin:8px 0 24px}.footer{padding:24px 32px;background:#f9f9f9;color:#6b7280;font-size:13px;line-height:1.6}</style></head><body><div class="wrap">${body}</div></body></html>`

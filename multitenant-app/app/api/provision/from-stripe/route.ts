@@ -136,7 +136,8 @@ export async function POST(request: NextRequest) {
       })
 
       // Send welcome email.
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furnishedportal.com'
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL
+      if (!appUrl) throw new Error('NEXT_PUBLIC_APP_URL is not set')
       const onboardingUrl = `${appUrl}/onboarding/${token}`
 
       try {
