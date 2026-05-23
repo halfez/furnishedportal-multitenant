@@ -87,6 +87,9 @@ model Subscription {
   monthlyAmount        Int      // cents (4900 = $49)
   setupAmount          Int      // cents (49900 = $499)
 
+  propertyCount        Int?     // 2–5; set at checkout for standard, at milestone charge for founding
+  stripeSetupIntentId  String?  @unique // founding cohort only: from the card-save checkout
+
   trialEndsAt          DateTime?
   currentPeriodEnd     DateTime?
   canceledAt           DateTime?

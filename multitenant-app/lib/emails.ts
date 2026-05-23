@@ -53,6 +53,51 @@ export async function sendWelcomeEmail({
   })
 }
 
+export async function sendFoundingWelcomeEmail({
+  to,
+  firstName,
+  onboardingUrl,
+  subdomain,
+  propertyCount,
+}: {
+  to: string
+  firstName: string
+  onboardingUrl: string
+  subdomain: string
+  propertyCount: number | null
+}) {
+  const monthlyLine = propertyCount
+    ? `$${propertyCount * 49}/mo (${propertyCount} properties × $49)`
+    : '$49/property/mo'
+  const html = base(`
+    <div class="header"><h1>You're in — Founding Cohort</h1></div>
+    <div class="body">
+      <p>Hi ${firstName},</p>
+      <p>Your card is saved. Your FurnishedPortal subdomain <strong>${subdomain}.furnishedportal.com</strong> is reserved.</p>
+      <p><strong>Here's how billing works for you:</strong><br>
+      You won't be charged anything until your first tenant is fully processed through your portal — lease signed and first payment collected. When that happens, I'll charge your card once for the $499 setup fee plus your first month (${monthlyLine}), and then your monthly subscription starts from there. Lifetime price-lock at $49/property — it never goes up for you.</p>
+      <p>In the meantime, let's get your portal set up. The setup takes about 10 minutes — property details, units, house rules, and branding. Once you're done your site goes live.</p>
+      <a class="cta" href="${onboardingUrl}">Set Up Your Portal</a>
+      <p style="font-size:13px;color:#6b7280;">This link expires in 7 days. Reply to this email if you need a new one.</p>
+      <p>If you ever get to the milestone and FurnishedPortal isn't working for you, just reach out and we'll make it right. — Hoshang</p>
+    </div>
+    <div class="footer">
+      <p>FurnishedPortal &mdash; Furnished Midterm Rentals<br>Questions? Reply to this email or visit <a href="${BASE_URL}">${BASE_URL}</a></p>
+    </div>
+  `)
+
+  if (EMAIL_TEST_MODE || !resend) {
+    console.log('[emails] TEST MODE founding-welcome →', to, '| onboarding URL:', onboardingUrl)
+    return
+  }
+  return resend.emails.send({
+    from: `FurnishedPortal <${FROM}>`,
+    to,
+    subject: "You're in — FurnishedPortal Founding Cohort",
+    html,
+  })
+}
+
 export async function sendGoLiveEmail({
   to,
   firstName,

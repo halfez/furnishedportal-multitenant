@@ -1,32 +1,16 @@
 export const dynamic = 'force-dynamic'
 
-import { notFound } from 'next/navigation'
 import { resolveLandlord } from '@/lib/landlord-context'
 import { withLandlordContext } from '@/lib/landlord-context'
-import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
+import MarketingPage from './marketing-page'
 
 export default async function HomePage() {
   const landlord = await resolveLandlord()
 
   if (!landlord) {
-    // Apex domain or unrecognised subdomain — show platform landing stub
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-fp-bg">
-        <div className="text-center max-w-lg px-6">
-          <h1 className="text-3xl font-bold text-fp-text mb-3">FurnishedPortal</h1>
-          <p className="text-fp-text-light mb-6">
-            Furnished midterm rentals. Find your next home.
-          </p>
-          <a
-            href="https://furnishedportal.com"
-            className="inline-block bg-fp-teal text-white px-6 py-3 rounded font-semibold hover:bg-fp-teal-hover transition-colors"
-          >
-            Learn more
-          </a>
-        </div>
-      </div>
-    )
+    // Apex domain — show the marketing / host acquisition page
+    return <MarketingPage />
   }
 
   const data = await withLandlordContext(landlord.id, async (db) => {
